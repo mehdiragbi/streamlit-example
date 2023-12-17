@@ -22,31 +22,47 @@ projects = pd.DataFrame([
 def main():
     st.title("Corporate Data Input App")
 
-    # Employee Information Section
-    st.header("Employee Information")
-    st.dataframe(employees)
+    # Sidebar for navigation
+    st.sidebar.title("Navigation")
+    section = st.sidebar.radio("Go to", ["Home", "Employee Information", "Project Information", "Assign Participation"])
 
-    # Project Information Section
-    st.header("Project Information")
-    st.dataframe(projects)
+    if section == "Home":
+        st.header("Welcome to the Corporate Data Input App")
+        st.write("Select a section from the sidebar to begin.")
 
-    # Participation Input Section
-    st.header("Assign Participation")
-    with st.form("participation_form"):
-        employee_id = st.selectbox("Select Employee", employees['id'])
-        project_id = st.selectbox("Select Project", projects['id'])
-        participation = st.slider("Participation Percentage", 0, 100, 50)
-        submit = st.form_submit_button("Submit")
+    elif section == "Employee Information":
+        st.header("Employee Information")
+        st.dataframe(employees)
 
-    if submit:
-        # Add the new mapping to the participation_data DataFrame in session state
-        new_row = {"Employee ID": employee_id, "Project ID": project_id, "Participation": participation}
-        st.session_state.participation_data = st.session_state.participation_data.append(new_row, ignore_index=True)
-        st.success("Participation Updated")
+    elif section == "Project Information":
+        st.header("Project Information")
+        st.dataframe(projects)
 
-    # Display participation data
-    st.subheader("Current Participation Mapping")
-    st.dataframe(st.session_state.participation_data)
+    elif section == "Assign Participation":
+        st.header("Assign Participation")
+
+        # Participation Input Form
+        with st.form("participation_form"):
+            for i in range(len(st.session_state.participation_data) + 1):
+                cols = st.columns([3, 3, 2])
+                with cols[0]:
+                    employee_choice = st.selectbox("Select Employee", [""] + list(employees['id']), key=f"emp_{i}")
+                with cols[1]:
+                    project_choice = st.selectbox("Select Project", [""] + list(projects['id']), key=f"proj_{i}")
+                with cols[2]:
+                    participation = st.number_input("Participation Percentage", min_value=0, max_value=100, format="%d%%", key=f"part_{i}")
+                
+                # Add row to participation data
+                if employee_choice and project_choice and participation:
+                    st.session_state.participation_data.loc[i] = [employee_choice, project_choice, participation]
+
+            submit = st.form_submit_button("Submit")
+
+        if submit:
+            st.success("Participation Data Updated")
+
+        st.subheader("Current Participation Mapping")
+        st.dataframe(st.session_state.participation_data)
 
 if __name__ == "__main__":
     main()
