@@ -40,25 +40,15 @@ def main():
 
     elif section == "Assign Participation":
         st.header("Assign Participation")
-
-        # Participation Input Form
         with st.form("participation_form"):
-            for i in range(len(st.session_state.participation_data) + 1):
-                cols = st.columns([3, 3, 2])
-                with cols[0]:
-                    employee_choice = st.selectbox("Select Employee", [""] + list(employees['id']), key=f"emp_{i}")
-                with cols[1]:
-                    project_choice = st.selectbox("Select Project", [""] + list(projects['id']), key=f"proj_{i}")
-                with cols[2]:
-                    participation = st.number_input("Participation Percentage", min_value=0, max_value=100, format="%d%%", key=f"part_{i}")
-                
-                # Add row to participation data
-                if employee_choice and project_choice and participation:
-                    st.session_state.participation_data.loc[i] = [employee_choice, project_choice, participation]
-
+            employee_choice = st.selectbox("Select Employee", [""] + list(employees['id']))
+            project_choice = st.selectbox("Select Project", [""] + list(projects['id']))
+            participation = st.number_input("Participation Percentage", min_value=0, max_value=100, format="%d%%")
             submit = st.form_submit_button("Submit")
 
-        if submit:
+        if submit and employee_choice and project_choice and participation is not None:
+            new_row = {"Employee ID": employee_choice, "Project ID": project_choice, "Participation": participation}
+            st.session_state.participation_data = st.session_state.participation_data.append(new_row, ignore_index=True)
             st.success("Participation Data Updated")
 
         st.subheader("Current Participation Mapping")
