@@ -1,6 +1,10 @@
 import streamlit as st
 import pandas as pd
 
+# Initialize session state for participation data
+if 'participation_data' not in st.session_state:
+    st.session_state.participation_data = pd.DataFrame(columns=["Employee ID", "Project ID", "Participation"])
+
 # Sample data for employees and projects
 employees = pd.DataFrame([
     {"id": "1", "name": "Alice", "role": "Developer"},
@@ -14,20 +18,17 @@ projects = pd.DataFrame([
     # ... more projects
 ])
 
-# Initialize an empty DataFrame for participation data
-participation_data = pd.DataFrame(columns=["Employee ID", "Project ID", "Participation"])
-
 # Streamlit app layout
 def main():
     st.title("Corporate Data Input App")
 
     # Employee Information Section
     st.header("Employee Information")
-    employees_display = st.dataframe(employees)
+    st.dataframe(employees)
 
     # Project Information Section
     st.header("Project Information")
-    projects_display = st.dataframe(projects)
+    st.dataframe(projects)
 
     # Participation Input Section
     st.header("Assign Participation")
@@ -38,15 +39,14 @@ def main():
         submit = st.form_submit_button("Submit")
 
     if submit:
-        # Add the new mapping to the participation_data DataFrame
+        # Add the new mapping to the participation_data DataFrame in session state
         new_row = {"Employee ID": employee_id, "Project ID": project_id, "Participation": participation}
-        global participation_data
-        participation_data = participation_data.append(new_row, ignore_index=True)
+        st.session_state.participation_data = st.session_state.participation_data.append(new_row, ignore_index=True)
         st.success("Participation Updated")
 
     # Display participation data
     st.subheader("Current Participation Mapping")
-    st.dataframe(participation_data)
+    st.dataframe(st.session_state.participation_data)
 
 if __name__ == "__main__":
     main()
