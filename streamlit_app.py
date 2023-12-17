@@ -19,8 +19,45 @@ projects = pd.DataFrame([
 if 'participation_data' not in st.session_state:
     st.session_state.participation_data = pd.DataFrame(columns=["Employee ID", "Project ID", "Participation"])
 
+# Apply custom styles
+def apply_custom_styles():
+    st.markdown(f"""
+        <style>
+            /* Main page background */
+            body {{
+                background-color: #ffffff;
+            }}
+            /* Primary button color */
+            .stButton>button {{
+                border: 2px solid #cccccc;
+                background-color: #ff4b4b;
+                color: #ffffff;
+            }}
+            /* Widget background */
+            .stTextInput, .stSelectbox, .stSlider {{
+                background-color: #cccccc;
+            }}
+            /* Text color */
+            .reportview-container .markdown-text, .reportview-container .streamlit-expanderHeader {{
+                color: #333333;
+            }}
+            /* Headers color */
+            h1, h2, h3, h4, h5, h6 {{
+                color: #ff4b4b;
+            }}
+            /* Dataframe styling */
+            .stDataFrame {{
+                background-color: #ffffff;
+            }}
+            /* Modify other Streamlit component styles here */
+        </style>
+    """, unsafe_allow_html=True)
+
 # Streamlit app layout
 def main():
+    # Inject custom CSS for styling
+    apply_custom_styles()
+
     st.title("Corporate Data Input App")
 
     # Sidebar for navigation
@@ -47,9 +84,7 @@ def main():
         grid_options.configure_column("Project ID", editable=True, cellEditor='agSelectCellEditor', cellEditorParams={
             'values': projects['id'].tolist()})
         grid_options.configure_column("Participation", editable=True, type=["numericColumn", "numberColumnFilter", "customNumericFormat"], precision=2)
-
-        grid_options.enable_pagination()
-        grid_options.set_pagination_auto_size(True)
+        
         grid_response = AgGrid(
             st.session_state.participation_data, 
             gridOptions=grid_options.build(), 
