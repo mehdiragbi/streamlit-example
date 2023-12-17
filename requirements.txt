@@ -4,3 +4,4 @@ streamlit
 pyecharts
 streamlit-echarts
 streamlit-aggrid
+st-aggrid
