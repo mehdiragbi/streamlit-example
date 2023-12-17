@@ -1,38 +1,66 @@
-from collections import namedtuple
-import altair as alt
-import math
-import pandas as pd
 import streamlit as st
+from pyecharts import options as opts
+from pyecharts.charts import Bar
+from streamlit_echarts import st_pyecharts
 
-"""
-# Welcome to Streamlit!
+# Fake employee data
+def load_employee_data():
+    return [
+        {"id": "1", "name": "Alice", "role": "Developer"},
+        {"id": "2", "name": "Bob", "role": "Designer"},
+        # Add more fake employees as needed
+    ]
 
-Edit `/streamlit_app.py` to customize this app to your heart's desire :heart:
+# Fake project data
+def load_project_data():
+    return [
+        {"id": "P1", "name": "Project Alpha"},
+        {"id": "P2", "name": "Project Beta"},
+        # Add more fake projects as needed
+    ]
 
-If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
-forums](https://discuss.streamlit.io).
+# Function to generate a bar chart using Echarts
+def generate_chart(data):
+    bar = Bar()
+    bar.add_xaxis([d['name'] for d in data])
+    bar.add_yaxis("Participation", [d['participation'] for d in data])
+    bar.set_global_opts(title_opts=opts.TitleOpts(title="Employee Participation"))
+    return bar
 
-In the meantime, below is an example of what you can do with just a few lines of code:
-"""
+# Streamlit app layout
+def main():
+    st.title("Corporate Data Input App")
 
+    st.sidebar.title("Navigation")
+    app_mode = st.sidebar.selectbox("Choose the section",
+                                    ["Employee Information", "Project Information", "Participation Input"])
 
-with st.echo(code_location='below'):
-    total_points = st.slider("Number of points in spiral", 1, 5000, 2000)
-    num_turns = st.slider("Number of turns in spiral", 1, 100, 9)
+    if app_mode == "Employee Information":
+        st.subheader("Employee Information")
+        employees = load_employee_data()
+        st.write(employees)
 
-    Point = namedtuple('Point', 'x y')
-    data = []
+    elif app_mode == "Project Information":
+        st.subheader("Project Information")
+        projects = load_project_data()
+        st.write(projects)
 
-    points_per_turn = total_points / num_turns
+    elif app_mode == "Participation Input":
+        st.subheader("Assign Participation")
+        # Dropdowns and input fields for employee-project assignment and participation percentage
+        employee_id = st.selectbox("Select Employee", [e['id'] for e in load_employee_data()])
+        project_id = st.selectbox("Select Project", [p['id'] for p in load_project_data()])
+        participation = st.slider("Participation Percentage", 0, 100)
+        
+        # Submit button and logic
+        submit = st.button("Submit")
+        if submit:
+            st.success("Participation Updated")
 
-    for curr_point_num in range(total_points):
-        curr_turn, i = divmod(curr_point_num, points_per_turn)
-        angle = (curr_turn + 1) * 2 * math.pi * i / points_per_turn
-        radius = curr_point_num / total_points
-        x = radius * math.cos(angle)
-        y = radius * math.sin(angle)
-        data.append(Point(x, y))
+            # Example chart (Replace with actual data)
+            sample_data = [{"name": "Alice", "participation": participation}]
+            chart = generate_chart(sample_data)
+            st_pyecharts(chart)
 
-    st.altair_chart(alt.Chart(pd.DataFrame(data), height=500, width=500)
-        .mark_circle(color='#0068c9', opacity=0.5)
-        .encode(x='x:Q', y='y:Q'))
+if __name__ == "__main__":
+    main()
