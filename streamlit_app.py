@@ -1,9 +1,6 @@
 import streamlit as st
+from st_aggrid import AgGrid, GridOptionsBuilder
 import pandas as pd
-
-# Initialize session state for participation data
-if 'participation_data' not in st.session_state:
-    st.session_state.participation_data = pd.DataFrame(columns=["Employee ID", "Project ID", "Participation"])
 
 # Sample data for employees and projects
 employees = pd.DataFrame([
@@ -17,6 +14,10 @@ projects = pd.DataFrame([
     {"id": "P2", "name": "Project Beta"},
     # ... more projects
 ])
+
+# Initialize session state for participation data
+if 'participation_data' not in st.session_state:
+    st.session_state.participation_data = pd.DataFrame(columns=["Employee ID", "Project ID", "Participation"])
 
 # Streamlit app layout
 def main():
@@ -32,27 +33,34 @@ def main():
 
     elif section == "Employee Information":
         st.header("Employee Information")
-        st.dataframe(employees)
+        AgGrid(employees)
 
     elif section == "Project Information":
         st.header("Project Information")
-        st.dataframe(projects)
+        AgGrid(projects)
 
     elif section == "Assign Participation":
         st.header("Assign Participation")
-        with st.form("participation_form"):
-            employee_choice = st.selectbox("Select Employee", [""] + list(employees['id']))
-            project_choice = st.selectbox("Select Project", [""] + list(projects['id']))
-            participation = st.number_input("Participation Percentage", min_value=0, max_value=100, format="%d%%")
-            submit = st.form_submit_button("Submit")
+        grid_options = GridOptionsBuilder.from_dataframe(st.session_state.participation_data)
+        grid_options.configure_column("Employee ID", editable=True, cellEditor='agSelectCellEditor', cellEditorParams={
+            'values': employees['id'].tolist()})
+        grid_options.configure_column("Project ID", editable=True, cellEditor='agSelectCellEditor', cellEditorParams={
+            'values': projects['id'].tolist()})
+        grid_options.configure_column("Participation", editable=True, type=["numericColumn", "numberColumnFilter", "customNumericFormat"], precision=2)
 
-        if submit and employee_choice and project_choice and participation is not None:
-            new_row = {"Employee ID": employee_choice, "Project ID": project_choice, "Participation": participation}
-            st.session_state.participation_data = st.session_state.participation_data.append(new_row, ignore_index=True)
-            st.success("Participation Data Updated")
+        grid_options.enable_pagination()
+        grid_options.set_pagination_auto_size(True)
+        grid_response = AgGrid(
+            st.session_state.participation_data, 
+            gridOptions=grid_options.build(), 
+            fit_columns_on_grid_load=True,
+            update_mode='MODEL_CHANGED',
+            enable_enterprise_modules=True,
+            height=300,
+            reload_data=False
+        )
 
-        st.subheader("Current Participation Mapping")
-        st.dataframe(st.session_state.participation_data)
+        st.session_state.participation_data = grid_response['data']
 
 if __name__ == "__main__":
     main()
