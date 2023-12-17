@@ -1,6 +1,6 @@
 import streamlit as st
-from pyecharts import options as opts
 from pyecharts.charts import Bar
+from pyecharts import options as opts
 from streamlit_echarts import st_pyecharts
 
 # Fake employee data
@@ -21,7 +21,7 @@ def load_project_data():
 
 # Function to generate a bar chart using Echarts
 def generate_chart(data):
-    bar = Bar()
+    bar = Bar(init_opts=opts.InitOpts(width="700px", height="400px"))
     bar.add_xaxis([d['name'] for d in data])
     bar.add_yaxis("Participation", [d['participation'] for d in data])
     bar.set_global_opts(title_opts=opts.TitleOpts(title="Employee Participation"))
@@ -47,17 +47,13 @@ def main():
 
     elif app_mode == "Participation Input":
         st.subheader("Assign Participation")
-        # Dropdowns and input fields for employee-project assignment and participation percentage
         employee_id = st.selectbox("Select Employee", [e['id'] for e in load_employee_data()])
         project_id = st.selectbox("Select Project", [p['id'] for p in load_project_data()])
         participation = st.slider("Participation Percentage", 0, 100)
         
-        # Submit button and logic
         submit = st.button("Submit")
         if submit:
             st.success("Participation Updated")
-
-            # Example chart (Replace with actual data)
             sample_data = [{"name": "Alice", "participation": participation}]
             chart = generate_chart(sample_data)
             st_pyecharts(chart)
